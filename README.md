@@ -93,17 +93,3 @@ Unlike black-box models, this system:
 * Mimics human expert reasoning
 * Supports transparent AI systems
 
----
-
-## 👤 Author
-
-Seb
-
----
-
-## 📚 References
-
-* Cohen, W. W. (1995) – Rule Induction
-* Scikit-learn Docs
-* Experta Docs
-
