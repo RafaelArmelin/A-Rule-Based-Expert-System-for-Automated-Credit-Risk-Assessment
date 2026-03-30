@@ -1,44 +1,109 @@
-Rule-Based Expert System for Automated Credit Risk Assessment
-📌 Overview
-This project implements a rule-based expert system to assess the credit risk of loan applicants.
-The system uses machine learning (rule induction) to generate decision rules, which are then applied through an expert system to classify applicants as Low, Medium, or High risk.
-🎯 Objectives
-Develop a rule-based model for credit risk classification
-Extract interpretable rules from data (RIPPER-style approach)
-Implement an expert system using these rules
-Compare performance with a baseline model (Decision Tree)
-Provide explainable AI outputs for decision transparency
-🛠️ Technologies Used
-Python
-Pandas & NumPy (data processing)
-Scikit-learn (baseline model & evaluation)
-Experta (rule-based expert system)
-Matplotlib / Seaborn (visualisation)
-📂 Project Structure
-src/            → Core system logic  
-data/           → Raw and processed datasets  
-notebooks/      → Data exploration (EDA)  
-results/        → Evaluation metrics and plots  
-report/         → Coursework report files  
-video/          → Presentation materials  
-⚙️ How It Works
-Preprocessing
-Clean and prepare the dataset
-Rule Learning
-Generate classification rules from data
-Expert System
-Apply rules using a knowledge-based system
-Evaluation
-Compare performance against a Decision Tree baseline
-▶️ How to Run
+# 💳 Credit Risk Expert System
+
+> A rule-based AI system for automated credit risk assessment using interpretable decision rules.
+
+---
+
+## 📌 Overview
+
+This project builds a **rule-based expert system** that evaluates the creditworthiness of applicants.
+It combines **machine learning (rule induction)** with **symbolic AI (expert systems)** to produce transparent and explainable decisions.
+
+---
+
+## 🎯 Key Features
+
+* ✅ Rule-based classification (Low / Medium / High risk)
+* ✅ Interpretable AI decisions
+* ✅ Machine learning + expert system integration
+* ✅ Baseline comparison (Decision Tree)
+* ✅ Visual evaluation (confusion matrix, ROC curves)
+
+---
+
+## 🧠 How It Works
+
+```text
+Data → Preprocessing → Rule Learning → Expert System → Evaluation
+```
+
+1. **Preprocessing** – clean and prepare data
+2. **Rule Learning** – extract decision rules
+3. **Expert System** – apply rules using inference engine
+4. **Evaluation** – compare with baseline model
+
+---
+
+## 🛠️ Tech Stack
+
+| Tool         | Purpose            |
+| ------------ | ------------------ |
+| Python       | Core language      |
+| Pandas       | Data processing    |
+| Scikit-learn | Baseline + metrics |
+| Experta      | Rule-based system  |
+| Matplotlib   | Visualisations     |
+
+---
+
+## 📂 Project Structure
+
+```text
+credit-risk-expert-system/
+├── src/            # Core logic
+├── data/           # Datasets
+├── notebooks/      # Exploration
+├── results/        # Outputs
+├── report/         # Coursework
+└── video/          # Presentation
+```
+
+---
+
+## ▶️ Run the Project
+
+```bash
 pip install -r requirements.txt
 python main.py
-📊 Expected Output
-Risk classification (Low / Medium / High)
-Evaluation metrics (accuracy, precision, recall)
-Visualisations (confusion matrix, ROC curve)
-🧠 Key Features
-Interpretable decision-making
-Rule-based reasoning
-Comparison with machine learning baseline
-Explainable AI approach
+```
+
+---
+
+## 📊 Output
+
+* Risk classification
+* Model performance metrics
+* Visual evaluation graphs
+
+---
+
+## 🧩 Example Rule
+
+```text
+IF income > 50,000 AND debt < 10,000 THEN Risk = Low
+```
+
+---
+
+## 🧠 Why This Matters
+
+Unlike black-box models, this system:
+
+* Explains decisions clearly
+* Mimics human expert reasoning
+* Supports transparent AI systems
+
+---
+
+## 👤 Author
+
+Seb
+
+---
+
+## 📚 References
+
+* Cohen, W. W. (1995) – Rule Induction
+* Scikit-learn Docs
+* Experta Docs
+
