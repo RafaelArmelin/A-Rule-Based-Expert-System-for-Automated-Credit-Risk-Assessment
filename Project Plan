@@ -1,0 +1,366 @@
+# CS6053 Coursework — Project Plan
+## A Rule-Based Expert System for Automated Credit Risk Assessment
+
+**Module:** CS6053 Artificial Intelligence and Machine Learning, Spring 2026
+**Topic:** Knowledge-based Learning (Topic 11)
+**Group size:** 3 members (all similar skill level)
+**Deadline:** Friday 8 May 2026
+**Word limit:** 3,500 words ±10% (excluding appendices and references)
+
+---
+
+## 1. Project Overview
+
+**What you are building:** A rule-based expert system that learns classification rules from a UK-relevant credit dataset, then uses those rules as a knowledge base to assess whether a loan applicant is high-risk or low-risk. The system combines knowledge-based learning (extracting rules from data) with expert system architecture (forward-chaining inference engine).
+
+**Why this fits Topic 11 (Knowledge-based Learning):** The system learns IF-THEN rules directly from labelled data using the RIPPER (JRip) algorithm — a knowledge-based learning technique that produces human-readable rules, unlike black-box models. You then operationalise those rules using the `experta` expert system library in Python, creating a full rational agent pipeline: data in → rules learned → inference engine → credit decision out.
+
+**Key technologies:**
+- Python 3.10+
+- `experta` — expert system shell (forward-chaining inference engine based on CLIPS)
+- `wittgenstein` — Python implementation of the RIPPER rule-learning algorithm
+- `scikit-learn` — for baseline comparison (Decision Tree), preprocessing, evaluation metrics
+- `pandas`, `matplotlib`, `seaborn` — data handling and visualisation
+
+---
+
+## 2. Dataset
+
+### Recommended: Kaggle Credit Risk Dataset
+**URL:** https://www.kaggle.com/datasets/laotse/credit-risk-dataset
+
+This dataset contains ~32,000 records with features relevant to consumer lending:
+- `person_age`, `person_income`, `person_emp_length`
+- `loan_amnt`, `loan_int_rate`, `loan_percent_income`
+- `person_home_ownership`, `loan_intent`, `loan_grade`
+- `cb_person_default_on_file`, `cb_person_cred_hist_length`
+- **Target:** `loan_status` (0 = non-default, 1 = default)
+
+### UK Framing
+While the dataset itself is not explicitly UK-sourced, you can contextualise it within the UK regulatory framework (FCA Consumer Duty, Consumer Credit Act 1974/2006, Equality Act 2010). This is a standard academic approach and gives you strong material for the Legal/Ethical section. Mention that UK lenders like Experian and Equifax use similar feature sets for credit scoring.
+
+### Alternative (if the module leader wants a strictly UK dataset)
+The **Thomas Credit Scoring dataset** from *Credit Scoring and its Applications* (Thomas, Edelman, Crook, 2002) is based on UK financial institution data. It is available via the book's companion resources and referenced in multiple academic papers on UK credit scoring.
+
+---
+
+## 3. Technical Architecture
+
+The system has three main components:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  1. DATA PREPROCESSING                              │
+│  Clean data → encode categoricals → train/test split│
+└─────────────────┬───────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────┐
+│  2. RULE LEARNING (Knowledge-based Learning)        │
+│  RIPPER algorithm (wittgenstein) → extract IF-THEN  │
+│  rules from training data                           │
+│  Also: Decision Tree rule extraction for comparison │
+└─────────────────┬───────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────┐
+│  3. EXPERT SYSTEM (Inference Engine)                │
+│  experta KnowledgeEngine loads learned rules →      │
+│  forward-chaining inference → credit risk decision  │
+│  + explanation of which rules fired                 │
+└─────────────────────────────────────────────────────┘
+```
+
+### 3.1 Rule Learning with RIPPER
+
+```python
+from wittgenstein import RIPPER
+
+# Train RIPPER on the credit dataset
+ripper_clf = RIPPER()
+ripper_clf.fit(X_train, y_train, class_feat='loan_status')
+
+# Extract human-readable rules
+print(ripper_clf.ruleset_)
+# Example output:
+# IF loan_percent_income >= 0.42 AND person_home_ownership = RENT THEN default
+# IF loan_int_rate >= 16.5 AND cb_person_default_on_file = Y THEN default
+```
+
+### 3.2 Expert System with experta
+
+```python
+from experta import *
+
+class Applicant(Fact):
+    """Applicant credit information."""
+    pass
+
+class CreditRiskEngine(KnowledgeEngine):
+    """Expert system using learned RIPPER rules."""
+
+    @Rule(Applicant(loan_percent_income=P(lambda x: x >= 0.42),
+                    person_home_ownership='RENT'))
+    def high_risk_rule_1(self):
+        self.declare(Fact(risk='HIGH'))
+        self.declare(Fact(explanation='Loan-to-income ratio exceeds 42% and applicant is renting'))
+
+    @Rule(Applicant(loan_int_rate=P(lambda x: x >= 16.5),
+                    cb_default_on_file='Y'))
+    def high_risk_rule_2(self):
+        self.declare(Fact(risk='HIGH'))
+        self.declare(Fact(explanation='High interest rate with prior default history'))
+
+    # ... more rules translated from RIPPER output
+
+    @Rule(NOT(Fact(risk=W())))
+    def default_low_risk(self):
+        self.declare(Fact(risk='LOW'))
+        self.declare(Fact(explanation='No high-risk rules triggered'))
+```
+
+### 3.3 Evaluation Strategy
+
+Compare three approaches on the **same test set** using standard metrics:
+
+| Model | Purpose |
+|---|---|
+| RIPPER rules (via `wittgenstein`) | Primary: knowledge-based learning |
+| RIPPER rules in `experta` engine | Verify the expert system reproduces the same decisions |
+| Decision Tree (`sklearn`) | Baseline comparison |
+
+**Metrics:** Accuracy, Precision, Recall, F1-score, Confusion Matrix, ROC-AUC
+
+This lets you argue that the expert system is not only interpretable but also competitive with standard ML classifiers.
+
+---
+
+## 4. GitHub Repository Structure
+
+```
+credit-risk-expert-system/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── data/
+│   ├── raw/                    # Original CSV (gitignored if large; add download instructions)
+│   └── processed/              # Cleaned train/test splits
+├── src/
+│   ├── __init__.py
+│   ├── preprocessing.py        # Data cleaning, encoding, splitting
+│   ├── rule_learning.py        # RIPPER training, rule extraction
+│   ├── expert_system.py        # experta KnowledgeEngine with learned rules
+│   ├── evaluation.py           # Metrics, confusion matrix, ROC curves
+│   └── baseline.py             # Decision Tree baseline comparison
+├── notebooks/
+│   └── exploration.ipynb       # EDA and initial data analysis
+├── results/
+│   ├── figures/                # Saved plots for the report
+│   └── metrics/                # Saved metric tables (CSV or JSON)
+├── report/
+│   └── (report files, if you draft in LaTeX or Word)
+└── video/
+    └── (Panopto recording script/notes)
+```
+
+**Setup instructions for README.md:**
+```bash
+git clone https://github.com/<your-org>/credit-risk-expert-system.git
+cd credit-risk-expert-system
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
+**requirements.txt:**
+```
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3
+wittgenstein>=0.3
+experta>=1.9.4
+matplotlib>=3.7
+seaborn>=0.12
+jupyter>=1.0
+```
+
+---
+
+## 5. Trello Board Structure
+
+Create a Trello board called **"CS6053 – Credit Risk Expert System"** with these lists:
+
+### Lists (columns)
+| List | Purpose |
+|---|---|
+| **Backlog** | All tasks not yet started |
+| **In Progress** | Currently being worked on |
+| **In Review** | Done, needs checking by another member |
+| **Done** | Complete and merged |
+| **Blockers** | Anything stalled or needing discussion |
+
+### Cards (tasks) — organised by week
+
+**Labels:**
+- 🟢 Code — implementation tasks
+- 🔵 Research — reading and writing tasks
+- 🟡 Report — report section drafting
+- 🔴 Video — Panopto recording tasks
+- ⚪ Admin — setup and coordination
+
+---
+
+## 6. Timeline and Work Split (5.5 weeks)
+
+Given everyone is juggling FYPs, mobile app coursework, and placements, the plan below keeps weekly commitments manageable (~6-8 hours per person per week) and maximises parallel work.
+
+### Week 1: 29 Mar – 4 Apr — Setup and Research (all parallel)
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| Create GitHub repo, set up structure, .gitignore, requirements.txt | Member A | 2 |
+| Set up Trello board with all task cards | Member B | 1.5 |
+| Download dataset, initial EDA notebook (distributions, missing values, class balance) | Member C | 3 |
+| Research: knowledge-based learning, RIPPER algorithm, expert systems theory | ALL (split papers) | 3 each |
+| Draft report: Section 2 (Introduction) and Section 3 (Background) outline | Member A | 2 |
+
+**Deliverables by end of Week 1:**
+- Repo set up with data loaded
+- Trello board populated
+- Each member has read 2-3 papers/chapters on the topic
+- Shared notes document on key concepts
+
+### Week 2: 5–11 Apr — Core Implementation (parallel tracks)
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| `preprocessing.py` — cleaning, encoding, train/test split | Member A | 4 |
+| `rule_learning.py` — RIPPER training, rule extraction, save rules | Member B | 5 |
+| `baseline.py` — Decision Tree baseline + rule extraction from tree | Member C | 4 |
+| Draft report: Section 4 (Problem Formulation) | Member C | 2 |
+
+**Deliverables by end of Week 2:**
+- Clean dataset with train/test split
+- RIPPER rules extracted and printed
+- Decision Tree baseline trained and evaluated
+
+### Week 3: 12–18 Apr — Expert System + Evaluation (parallel tracks)
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| `expert_system.py` — translate RIPPER rules into experta engine | Member A | 5 |
+| `evaluation.py` — accuracy, precision, recall, F1, confusion matrix, ROC-AUC | Member B | 4 |
+| Generate all figures: confusion matrices, ROC curves, rule visualisation | Member C | 4 |
+| Draft report: Section 5 (Proposed Solution / Methodology) | Member B | 3 |
+
+**Deliverables by end of Week 3:**
+- Working expert system that takes an applicant's details and outputs risk + explanation
+- Full evaluation metrics table comparing RIPPER, expert system, and Decision Tree
+- All figures saved in `results/figures/`
+
+### Week 4: 19–25 Apr — Report Writing (all three writing in parallel)
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| Report: Section 6 (Results and Analysis) — write up metrics, interpret figures | Member A | 4 |
+| Report: Section 7 (Legal, Social, Ethical, Professional Issues) | Member B | 3 |
+| Report: Section 8 (Conclusion and Future Work) | Member C | 2 |
+| Report: Sections 9 (Individual Reflection) — each writes their own | ALL | 2 each |
+| Report: Section 1 (Abstract) — write last once everything else is done | Member A | 1 |
+| Report: Appendix A (Project Management) — roles, work division, Gantt chart | Member C | 2 |
+| Report: References — compile Harvard-style bibliography | Member B | 2 |
+
+**Deliverables by end of Week 4:**
+- Complete first draft of the full report
+- All sections written and merged
+
+### Week 5: 26 Apr – 2 May — Video + Review
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| Peer-review entire report (each member reviews sections they did not write) | ALL | 2 each |
+| Incorporate feedback, final report polish | Member A | 3 |
+| Write Panopto video script (each member covers ~3.5 min) | ALL | 1.5 each |
+| Record Panopto video (10 min, all members on camera) | ALL | 2 |
+| Prepare code ZIP with README | Member B | 1.5 |
+
+**Deliverables by end of Week 5:**
+- Final polished report
+- Recorded Panopto video
+- Code ZIP with README
+
+### Week 6: 3–8 May — Buffer and Submission
+
+| Task | Owner | Est. hours |
+|---|---|---|
+| Final checks: word count, figure captions, reference formatting | ALL | 1 each |
+| Upload: report, video, code ZIP to submission portal | Member C | 1 |
+
+---
+
+## 7. Report Section Plan (mapped to marking scheme)
+
+| Section | Weight | Word guide | Key content |
+|---|---|---|---|
+| **Abstract** | 5% | ~250 words | Problem, method (RIPPER + experta), key result, conclusion |
+| **Introduction** | 5% | ~300 words | Motivation (credit risk in UK lending), aims, rationale for expert systems |
+| **Background** | 5% | ~400 words | Knowledge-based learning theory, RIPPER algorithm, expert systems (CLIPS/experta), related work |
+| **Problem Formulation** | 5% | ~250 words | Define credit risk classification task, dataset description, features, target variable |
+| **Proposed Solution** | 10% | ~500 words | Architecture diagram, RIPPER training process, experta rule translation, evaluation methodology |
+| **Results and Analysis** | 10% | ~600 words | Metrics tables, confusion matrices, ROC curves, comparison with Decision Tree baseline, discussion |
+| **Legal/Ethical Issues** | 5% | ~350 words | FCA Consumer Duty, Equality Act 2010 (protected characteristics), GDPR, algorithmic transparency, explainability advantage of rule-based systems |
+| **Conclusion** | 5% | ~200 words | Summary, limitations, future work (e.g., add more data sources, online rule updating) |
+| **Individual Reflection** | 10% | ~300 words each | Personal learning, contribution, what you would do differently |
+| **References** | 5% | N/A | Harvard style, 15-20 sources (mix of textbooks, papers, documentation) |
+| **Appendix A** | 5% | N/A | Roles table, Gantt chart, work division |
+
+**Total body text:** ~3,450 words (within ±10% of 3,500)
+
+---
+
+## 8. Panopto Video Plan (30% of marks)
+
+**Total duration:** 10 minutes, split roughly equally.
+
+| Segment | Speaker | Duration | Content |
+|---|---|---|---|
+| Intro + Problem | Member A | ~1.5 min | Problem motivation, dataset, aims |
+| Background + Method | Member B | ~2 min | RIPPER algorithm, expert system architecture |
+| **Live Demo** | Member C | ~3 min | Run the system: show preprocessing, rule learning, expert system inference, output with explanation |
+| Results + Evaluation | Member A | ~2 min | Walk through metrics, confusion matrix, comparison chart |
+| Ethics + Conclusion | Member B | ~1.5 min | Legal/ethical points, limitations, future work |
+
+**Tips:**
+- Screen-share the running code in VS Code or a terminal
+- Show the expert system taking a sample applicant and explaining the decision
+- Keep slides minimal — the code demo is what earns marks here
+- Every member MUST appear on camera at some point (requirement for passing)
+
+---
+
+## 9. Key References to Get Started
+
+1. Russell, S. and Norvig, P. (2021) *Artificial Intelligence: A Modern Approach*. 4th edn. Harlow: Pearson. — Chapter on knowledge-based learning
+2. Cohen, W. (1995) 'Fast Effective Rule Induction', *Proceedings of the 12th International Conference on Machine Learning*, pp. 115–123. — Original RIPPER paper
+3. Jackson, P. (1998) *Introduction to Expert Systems*. 3rd edn. Harlow: Addison-Wesley.
+4. `experta` documentation: https://experta.readthedocs.io/en/latest/
+5. `wittgenstein` (RIPPER for Python): https://github.com/imoscovitz/wittgenstein
+6. FCA (2023) *Consumer Duty*. Available at: https://www.fca.org.uk/firms/consumer-duty
+7. ICO (2023) *Guidance on AI and data protection*. Available at: https://ico.org.uk/for-organisations/guide-to-data-protection/key-dp-themes/guidance-on-ai-and-data-protection/
+8. Baesens, B., Roesch, D. and Scheule, H. (2016) *Credit Risk Analytics*. Chichester: Wiley.
+
+---
+
+## 10. Quick-Start Checklist
+
+- [ ] Create GitHub repo and invite all members
+- [ ] Set up Trello board (copy the structure above)
+- [ ] Download dataset from Kaggle
+- [ ] Each member installs Python environment and `pip install -r requirements.txt`
+- [ ] Each member reads the RIPPER paper (Cohen, 1995) and experta docs
+- [ ] Post topic confirmation in the module discussion forum
+- [ ] Start EDA notebook
+
+---
+
+*Plan created: 29 March 2026*
