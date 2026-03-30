@@ -16,3 +16,17 @@ venv/
 # Logs
 *.log
 
+# Ignore raw data if large
+data/raw/*
+
+# But keep folder
+!data/raw/.gitkeep
+
+# Ignore processed outputs (optional)
+data/processed/*
+
+# Keep structure
+!data/processed/.gitkeep
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
