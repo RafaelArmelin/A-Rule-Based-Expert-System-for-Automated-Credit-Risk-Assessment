@@ -1,0 +1,66 @@
+
+We will use a three-stage design:
+
+1. Data validation and hard-stop rules.
+
+2. Weighted credit-risk scoring.
+
+3. Final decision thresholds with manual review overrides.
+
+1. Validation rules: 
+
+If person_age is missing, then REFER.
+
+If person_income is missing or <= 0, then REJECT.
+
+If loan_amnt is missing or <= 0, then REJECT.
+
+If loan_percent_income is missing, then REFER.
+
+If loan_grade is missing, then REFER.
+
+If loan_int_rate is missing, then REFER.
+
+If cb_person_cred_hist_length is missing, then REFER.
+
+If person_emp_length is missing, then REFER.
+
+If person_emp_length > person_age - 16, then REFER for data quality review.
+
+If person_age < 18, then REJECT.
+
+
+
+2. Hard affordability and risk rules
+
+If loan_percent_income >= 0.50, then REJECT, because repayment burden is likely unsustainable.
+
+If loan_percent_income >= 0.40 and person_income < 25000, then REJECT.
+
+If cb_person_default_on_file = 'Y' and loan_grade in D,E,F,G, then REJECT.
+
+If cb_person_default_on_file = 'Y' and loan_percent_income > 0.35, then REJECT.
+
+If cb_person_cred_hist_length < 1 and loan_amnt > 10000, then REJECT.
+
+If person_emp_length = 0 and loan_percent_income > 0.35, then REJECT.
+
+If loan_int_rate > 20, then REFER or REJECT based on policy, because very high-cost credit should trigger stricter scrutiny for customer detriment.
+
+If person_home_ownership = 'OTHER' and loan_percent_income > 0.35, then REFER.
+
+If loan_intent = 'DEBTCONSOLIDATION' and loan_percent_income > 0.35, then REFER, because consolidation can indicate existing financial stress.
+
+If loan_intent = 'PERSONAL' and loan_percent_income > 0.40, then REJECT.
+
+
+
+3.  Manual-review rules
+
+If person_age is 18-20, then REFER unless the score is strong and all other checks pass.
+
+If person_age > 70, then REFER for enhanced review of income sustainability and potential vulnerability.
+
+If person_income > 250000 and person_age < 25, then REFER for income verification and fraud/KYC review.
+
+If any identity, source-of-funds, or AML concern exists outside this dataset, then REFER, because customer due diligence is required when establishing a business relationship or when information appears unreliable.
