@@ -1,3 +1,9 @@
+loan_percent_income is how expensive the new loan would be compared with income. 0.42 is 42% loan based on the person's income, so it is too much 
+cb_person_default_on_file means whether the person has a previous default recorded by the credit bureau.
+Y = yes, the person has defaulted before,  N = no, there is no recorded default on file. 
+In your rules, Y should usually be treated as a negative risk signal, especially when combined with a high loan amount, a high loan percentage of income.
+
+We can also use a point-based system
 
 We will use a three-stage design:
 
