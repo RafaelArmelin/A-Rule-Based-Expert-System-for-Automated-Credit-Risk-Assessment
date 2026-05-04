@@ -1,95 +1,86 @@
-# 💳 Credit Risk Expert System
+# A Rule-Based Expert System for Automated Credit Risk Assessment
 
-> A rule-based AI system for automated credit risk assessment using interpretable decision rules.
+CS6053 Artificial Intelligence and Machine Learning — Spring 2026, London Metropolitan University
 
----
+A Python-based expert system that learns credit risk classification rules from data using the RIPPER algorithm and operationalises them through a forward-chaining inference engine built with `experta`.
 
-## 📌 Overview
+## How It Works
 
-This project builds a **rule-based expert system** that evaluates the creditworthiness of applicants.
-It combines **machine learning (rule induction)** with **symbolic AI (expert systems)** to produce transparent and explainable decisions.
+1. **Preprocessing** — Cleans and encodes the [Kaggle Credit Risk Dataset](https://www.kaggle.com/datasets/laotse/credit-risk-dataset) (32,575 records)
+2. **Rule Learning** — Extracts human-readable IF-THEN rules using RIPPER (`wittgenstein`)
+3. **Expert System** — 24 hand-crafted rules in an `experta` knowledge engine covering data validation, affordability, and manual review
+4. **Evaluation** — Compares performance against a Decision Tree baseline
+5. **Dashboard** — Streamlit web interface for individual assessment, model comparison, and dataset exploration
 
----
-
-## 🎯 Key Features
-
-* ✅ Rule-based classification (Low / Medium / High risk)
-* ✅ Interpretable AI decisions
-* ✅ Machine learning + expert system integration
-* ✅ Baseline comparison (Decision Tree)
-* ✅ Visual evaluation (confusion matrix, ROC curves)
-
----
-
-## 🧠 How It Works
-
-```text
-Data → Preprocessing → Rule Learning → Expert System → Evaluation
-```
-
-1. **Preprocessing** – clean and prepare data
-2. **Rule Learning** – extract decision rules
-3. **Expert System** – apply rules using inference engine
-4. **Evaluation** – compare with baseline model
-
----
-
-## 🛠️ Tech Stack
-
-| Tool         | Purpose            |
-| ------------ | ------------------ |
-| Python       | Core language      |
-| Pandas       | Data processing    |
-| Scikit-learn | Baseline + metrics |
-| Experta      | Rule-based system  |
-| Matplotlib   | Visualisations     |
-
----
-
-## 📂 Project Structure
-
-```text
-credit-risk-expert-system/
-├── src/            # Core logic
-├── data/           # Datasets
-├── notebooks/      # Exploration
-├── results/        # Outputs
-├── report/         # Coursework
-└── video/          # Presentation
-```
-
----
-
-## ▶️ Run the Project
+## Setup
 
 ```bash
+git clone https://github.com/RafaelArmelin/A-Rule-Based-Expert-System-for-Automated-Credit-Risk-Assessment.git
+cd A-Rule-Based-Expert-System-for-Automated-Credit-Risk-Assessment
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python main.py
 ```
 
----
+## Usage
 
-## 📊 Output
+```bash
+# Run the Streamlit dashboard
+streamlit run app.py
 
-* Risk classification
-* Model performance metrics
-* Visual evaluation graphs
-
----
-
-## 🧩 Example Rule
-
-```text
-IF income > 50,000 AND debt < 10,000 THEN Risk = Low
+# Or run individual components
+python src/rule_learning.py
+python src/expert_system.py
+python src/evaluation.py
 ```
 
----
+## Project Structure
 
-## 🧠 Why This Matters
+```
+├── app.py                  # Streamlit dashboard
+├── requirements.txt
+├── data/
+│   ├── raw/                # Original dataset
+│   └── processed/          # Cleaned data and preprocessing script
+├── src/
+│   ├── preprocessing.py    # Data cleaning and encoding
+│   ├── rule_learning.py    # RIPPER training and rule extraction
+│   ├── expert_system.py    # experta inference engine (24 rules)
+│   ├── evaluation.py       # Metrics and visualisations
+│   └── baseline.py         # Decision Tree comparison
+├── notebooks/
+│   └── exploration.ipynb   # Exploratory data analysis
+├── results/
+│   ├── figures/            # Saved plots
+│   └── metrics/            # Evaluation outputs
+└── report/                 # Coursework report
+```
 
-Unlike black-box models, this system:
+## Key Results
 
-* Explains decisions clearly
-* Mimics human expert reasoning
-* Supports transparent AI systems
+| Model | Accuracy | F1 Score | ROC-AUC |
+|-------|----------|----------|---------|
+| RIPPER | 0.9130 | 0.7557 | 0.8075 |
+| Expert System (24 rules) | 0.8037 | 0.4343 | N/A |
+| Decision Tree (baseline) | 0.9110 | 0.7438 | 0.8847 |
 
+The expert system trades predictive accuracy for full decision transparency — every outcome is accompanied by the specific rules that triggered it.
+
+## Requirements
+
+- Python 3.10+
+- pandas, numpy, scikit-learn
+- wittgenstein (RIPPER implementation)
+- experta (expert system shell)
+- matplotlib, seaborn
+- streamlit
+
+## Authors
+
+- Rafael Armelin (22034439)
+- Sebastian Mills (23002128)
+- Sergiu Mita (22030807)
+
+## Licence
+
+This project is for academic purposes only.
