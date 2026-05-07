@@ -145,7 +145,7 @@ def load_data():
     return pd.read_csv(DATA_PATH)
 
 
-@st.cache_data
+# @st.cache_data
 def get_train_test_split(test_size=0.20, random_state=42):
     """Cached train/test split matching rule_learning.py parameters."""
     df = load_data()
@@ -323,7 +323,7 @@ elif page == "Model Comparison":
 
     # ── Decision Tree ─────────────────────────────────────────────────────
 
-    @st.cache_resource
+    # @st.cache_resource
     def train_decision_tree():
         cat_cols = X_train.select_dtypes(include='object').columns.tolist()
         X_tr_enc = X_train.copy()
@@ -345,11 +345,11 @@ elif page == "Model Comparison":
 
     # ── RIPPER ────────────────────────────────────────────────────────────
 
-    @st.cache_resource
+    # @st.cache_resource(ttl=1)
     def train_ripper_model():
         import wittgenstein as lw
         train_df = X_train.copy()
-        train_df[TARGET_COL] = y_train.values
+        train_df[TARGET_COL] = y_train.astype(str).values
         ripper = lw.RIPPER(random_state=42)
         ripper.fit(train_df, class_feat=TARGET_COL, pos_class='1')
         raw_pred = ripper.predict(X_test)
@@ -359,7 +359,7 @@ elif page == "Model Comparison":
 
     # ── Expert System ─────────────────────────────────────────────────────
 
-    @st.cache_data
+    # @st.cache_data
     def run_expert_system():
         decision_map = {'APPROVE': 0, 'REFER': 1, 'REJECT': 1}
         predictions = []
@@ -390,7 +390,7 @@ elif page == "Model Comparison":
         ripper_model, ripper_pred, ripper_prob = train_ripper_model()
         es_pred = run_expert_system()
 
-    y_test_arr = y_test.values
+    y_test_arr = y_test.astype(int).values
 
     # ── Compute metrics ───────────────────────────────────────────────────
 
